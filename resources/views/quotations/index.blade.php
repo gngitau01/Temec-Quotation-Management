@@ -3,22 +3,11 @@
 @section('title', 'Quotations')
 
 @section('content')
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Quotations</h2>
-        <div class="space-x-3">
-            <a href="{{ route('quotations.api-view') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition inline-block">
-                <i class="fas fa-database mr-2"></i> View by API
-            </a>
-            <a href="{{ route('quotations.create') }}" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition inline-block">
-                <i class="fas fa-upload mr-2"></i> Upload Quotation
-            </a>
-        </div>
-    </div>
 
-    @if (session('status'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded flex items-center justify-between">
-            {{ session('status') }}
-            <button class="text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none';">
+@if (session('status'))
+<div class="mb-4 p-4 bg-green-100 text-green-700 rounded flex items-center justify-between">
+    {{ session('status') }}
+    <button class="text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none';">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -31,16 +20,27 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    @endif
-
-    @if (session('warning'))
+        @endif
+        
+        @if (session('warning'))
         <div class="mb-4 p-4 bg-yellow-100 text-yellow-700 rounded flex items-center justify-between">
             {{ session('warning') }}
             <button class="text-yellow-700 hover:text-yellow-900" onclick="this.parentElement.style.display='none';">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-    @endif
+        @endif
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Quotations</h2>
+            <div class="space-x-3">
+                <a href="{{ route('quotations.api-view') }}" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition inline-block">
+                    <i class="fas fa-database mr-2"></i> View by API
+                </a>
+                <a href="{{ route('quotations.create') }}" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition inline-block">
+                    <i class="fas fa-upload mr-2"></i> Upload Quotation
+                </a>
+            </div>
+        </div>
 
     <div class="bg-white rounded shadow overflow-hidden">
         @if ($quotations->count())

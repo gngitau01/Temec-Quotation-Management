@@ -35,7 +35,7 @@
                 <label class="inline-flex items-center">
                     <input type="checkbox" name="remember" class="mr-2"> Remember me
                 </label>
-                <a href="#" class="text-sm text-blue-600">Forgot?</a>
+                <a href="{{ route('password.forgot') }}" class="text-sm text-blue-600">Forgot password?</a>
             </div>
             <div class="flex items-center justify-between">
                 <button class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>

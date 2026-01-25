@@ -6,9 +6,17 @@
     <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Quotation #{{ $quotation->document_number }}</h2>
-            <a href="{{ route('quotations.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
-                <i class="fas fa-arrow-left mr-2"></i> Back
-            </a>
+            <div class="flex space-x-2">
+                <form action="{{ route('quotations.generate-pdf', $quotation->id) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                        <i class="fas fa-file-pdf mr-2"></i> Generate PDF
+                    </button>
+                </form>
+                <a href="{{ route('quotations.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-arrow-left mr-2"></i> Back
+                </a>
+            </div>
         </div>
 
         <!-- Document Header Info -->

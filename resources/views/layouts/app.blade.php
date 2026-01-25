@@ -40,6 +40,14 @@
             <a href="{{ route('customers.index') }}" class="block px-6 py-3 hover:bg-purple-700 transition {{ request()->routeIs('customers.*') ? 'bg-purple-900' : '' }}">
                 <i class="fas fa-users mr-2"></i> Customers
             </a>
+            @if(auth()->user()->role === 'admin')
+            <a href="{{ route('spare-parts.index') }}" class="block px-6 py-3 hover:bg-purple-700 transition {{ request()->routeIs('spare-parts.*') ? 'bg-purple-900' : '' }}">
+                <i class="fas fa-cogs mr-2"></i> Spare Parts
+            </a>
+            <a href="{{ route('user-management.index') }}" class="block px-6 py-3 hover:bg-purple-700 transition {{ request()->routeIs('user-management.*') ? 'bg-purple-900' : '' }}">
+                <i class="fas fa-users-cog mr-2"></i> User Management
+            </a>
+            @endif
             <a href="{{ route('quotations.index') }}" class="block px-6 py-3 hover:bg-purple-700 transition {{ request()->routeIs('quotations.create') ? 'bg-purple-900' : '' }}">
                 <i class="fas fa-file-pdf mr-2"></i> Uploads
             </a>
@@ -95,12 +103,6 @@
 
         <!-- Page Content -->
         <div class="p-6">
-            @if (session('status'))
-                <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             @if ($errors->any())
                 <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
                     <ul class="list-disc pl-5">

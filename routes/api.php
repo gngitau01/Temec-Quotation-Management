@@ -3,12 +3,18 @@
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+// Auth routes
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 
 Route::get('/customer/list-all', [CustomerController::class, 'listCustomers']);

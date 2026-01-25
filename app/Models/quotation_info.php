@@ -25,15 +25,15 @@ class quotation_info extends Model
 
     public function items()
     {
-        return $this->hasMany(items::class);
+        return $this->hasMany(items::class,'quotation_id');
     }
 
     public function vendor()
     {
-        return $this->belongsTo(vendors::class);
+        return $this->hasOne(vendors::class, 'quotation_id');
     }
     public function buyers()
     {
-        return $this->belongsTo(buyers::class);
+        return $this->hasOne(buyers::class, 'quotation_id');
     }
 }

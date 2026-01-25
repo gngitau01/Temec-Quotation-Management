@@ -154,6 +154,16 @@
                 </table>
             </div>
         </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex justify-between">
+            <a href="{{ route('quotations.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Quotations
+            </a>
+            <a id="viewDetailsBtn" href="#" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                <i class="fas fa-eye mr-2"></i> View Full Details
+            </a>
+        </div>
     </div>
 
     <!-- Empty State -->
@@ -215,6 +225,9 @@
         const vendor = data.vendor;
         const buyer = data.buyer;
         const items = data.items || [];
+
+        // Set the view details link
+        document.getElementById('viewDetailsBtn').href = `/quotations/${quotation.id}/details`;
 
         // Populate quotation details
         document.getElementById('docNumber').textContent = quotation.document_number || '-';
