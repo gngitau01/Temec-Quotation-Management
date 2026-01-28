@@ -1,0 +1,74 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temec-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: Temec
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: temec
+      DB_USERNAME: temec_user
+      DB_PASSWORD: ${DB_PASSWORD:-temec_secret}
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: 120
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      FILESYSTEM_DISK: local
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-reply@example.com}
+      MAIL_FROM_NAME: Temec
+      EXTERNAL_API_UPLOAD_URL: ${EXTERNAL_API_UPLOAD_URL:-}
+      DB_SEED: ${DB_SEED:-false}
+    volumes:
+      - app-storage:/var/www/html/storage/app
+      - app-logs:/var/www/html/storage/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - temec
+
+  mysql:
+    image: mysql:8.0
+    container_name: temec-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-temec_root_secret}
+      MYSQL_DATABASE: temec
+      MYSQL_USER: temec_user
+      MYSQL_PASSWORD: ${DB_PASSWORD:-temec_secret}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-temec_root_secret}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - temec
+
+volumes:
+  mysql-data:
+  app-storage:
+  app-logs:
+
+networks:
+  temec:
+    driver: bridge

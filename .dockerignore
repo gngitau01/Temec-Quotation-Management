@@ -1,0 +1,17 @@
+node_modules
+vendor
+.git
+.env
+.env.backup
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+phpunit.xml
+.editorconfig
+.gitattributes
+docker-compose.yml
+deploy/
+CLAUDE.md
+README.md
