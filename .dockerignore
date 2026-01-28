@@ -12,6 +12,8 @@ phpunit.xml
 .editorconfig
 .gitattributes
 docker-compose.yml
-deploy/
+deploy/deploy_to_linode.sh
+deploy/nginx_temec.conf
+deploy/README_DEPLOY.md
 CLAUDE.md
 README.md

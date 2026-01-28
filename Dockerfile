@@ -18,6 +18,7 @@ RUN apk add --no-cache \
     nginx \
     supervisor \
     curl \
+    curl-dev \
     zip \
     unzip \
     git \
@@ -30,7 +31,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     poppler-utils
 
-# Install PHP extensions
+# Install PHP extensions (curl extension is already built into php:8.2-fpm-alpine)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
     pdo \
@@ -38,7 +39,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     mbstring \
     xml \
     zip \
-    curl \
     gd \
     intl \
     bcmath \
