@@ -39,7 +39,7 @@ Route::get('/test-email', function () {
 
 // Protected dashboard routes
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
