@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# Fix permissions on mounted volumes (they may be owned by root)
+echo "Setting storage permissions..."
+chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage
+chmod -R 775 /var/www/html/bootstrap/cache
+
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
     echo "Generating application key..."
