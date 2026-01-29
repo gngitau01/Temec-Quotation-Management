@@ -102,7 +102,7 @@ class FileUploadController extends Controller
             ]);
 
             $file = $request->file('file');
-            $apiURL = env('EXTERNAL_API_UPLOAD_URL', 'http://139.162.165.148:8080/api/pdf/upload');
+            $apiURL = env('EXTERNAL_API_UPLOAD_URL', 'http://139.162.155.251:8080/api/pdf/upload');
 
             // Stream directly to external API using the temporary uploaded file
             $response = Http::timeout(60)
@@ -155,7 +155,7 @@ class FileUploadController extends Controller
                 );
 
                 // Create buyer
-                $buyer = buyers::create(array_merge(['quotation_id' => $document->id],$buyerInfo));
+                $buyer = buyers::create(array_merge(['quotation_id' => $document->id], $buyerInfo));
 
                 // Create document
 
@@ -206,7 +206,7 @@ class FileUploadController extends Controller
             ], 502);
         }
     }
-    
+
     public function readQuotationById($id)
     {
         try {
@@ -214,7 +214,7 @@ class FileUploadController extends Controller
             $vendor = vendors::where('quotation_id', $id)->first();
             $buyer = buyers::where('quotation_id', $id)->first();
             $items = items::where('quotation_id', $id)->get();
-            
+
             return response()->json([
                 'status' => 'success',
                 'data' => [
@@ -236,7 +236,7 @@ class FileUploadController extends Controller
                 'quotation_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to retrieve quotation details',
@@ -445,7 +445,7 @@ class FileUploadController extends Controller
                 'quotation_id' => $id,
             ];
 
-            $apiURL = env('API_GENERATION_URL', 'http://139.162.165.148:8080/api/pdf/create');
+            $apiURL = env('API_GENERATION_URL', 'http://139.162.155.251:8080/api/pdf/create');
 
             // Log payload for debugging (will appear in storage/logs)
             Log::info('Sending quotation to generation API', ['quotation_id' => $id, 'payload' => $payload]);

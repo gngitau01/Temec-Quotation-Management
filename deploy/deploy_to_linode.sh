@@ -90,7 +90,7 @@ if [ ! -f "$NGINX_CONF" ]; then
 server {
     listen 8080 default_server;
     listen [::]:8080 default_server;
-    server_name 139.162.165.148;
+    server_name 139.162.155.251;
     root /var/www/temec/public;
     index index.php index.html;
     location / {
@@ -116,4 +116,4 @@ nginx -t && systemctl reload nginx || { echo "Nginx reload failed"; nginx -t || 
 # Ensure php-fpm running
 systemctl restart php8.1-fpm || systemctl restart php-fpm || echo "php-fpm restart failed"
 
-echo "Deploy script finished. Visit http://139.162.165.148:8080/ to verify."
+echo "Deploy script finished. Visit http://139.162.155.251:8080/ to verify."
