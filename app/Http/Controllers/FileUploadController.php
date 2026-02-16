@@ -479,4 +479,54 @@ class FileUploadController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Failed to send quotation', 'error' => config('app.debug') ? $e->getMessage() : null], 500);
         }
     }
+
+    /**
+     * Get list of all quotations with summary information
+     */
+    public function listQuotationsWithSummary()
+    {
+        try {
+            $quotations = quotation_info::with(['vendor', 'buyers', 'items'])->get();
+            
+            $quotationList = $quotations->map(function ($quotation) {
+                $items = $quotation->items ?? collect();
+                $totalCost = $items->sum('total_cost');
+                $itemCount = $items->count();
+                
+                return [
+                    'id' => $quotation->id,
+                    'document_number' => $quotation->document_number,
+                    'date' => $quotation->date,
+                    'collective_no' => $quotation->collective_no,
+                    'closing_date' => $quotation->closing_date,
+                    'closing_time' => $quotation->closing_time,
+                    'email' => $quotation->email,
+                    'prepared_by' => $quotation->prepared_by,
+                    'approved_by' => $quotation->approved_by,
+                    'vendor_name' => $quotation->vendor?->name ?? 'N/A',
+                    'buyer_name' => $quotation->buyers?->name ?? 'N/A',
+                    'item_count' => $itemCount,
+                    'total_cost' => $totalCost,
+                ];
+            });
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $quotationList,
+                'count' => $quotationList->count(),
+                'message' => 'Quotations retrieved successfully'
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Error retrieving quotations', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve quotations',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
 }
+

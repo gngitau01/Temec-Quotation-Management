@@ -3,9 +3,7 @@
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\QuotationController;
-use App\Http\Controllers\AuthController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SparePartsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -26,6 +24,7 @@ Route::delete('/customer/delete/{id}', [CustomerController::class, 'deleteCustom
 Route::post('/quotation/upload', [FileUploadController::class, 'saveQuotationFile']);
 Route::get('/quotation/list-all', [FileUploadController::class, 'listQuotations']);
 Route::get('/quotation/search', [FileUploadController::class, 'listQuotations']);
+Route::get('/quotations/with-summary', [FileUploadController::class, 'listQuotationsWithSummary']);
 Route::delete('/quotation/delete/{id}', [FileUploadController::class, 'deleteQuotation']);
 
 
@@ -40,3 +39,6 @@ Route::put('/item/{itemId}/vat-percentage', [FileUploadController::class, 'updat
 
 // Send quotation to generation API
 Route::post('/quotation/{id}/generate', [FileUploadController::class, 'sendQuotationToApi']);
+
+// Spare Parts API
+Route::get('/spare-parts', [SparePartsController::class, 'apiList']);
