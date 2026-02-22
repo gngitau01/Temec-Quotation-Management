@@ -40,32 +40,34 @@ class items extends Model
             $spare = SparePart::where('part_number', $this->item_no)->first();
             if ($spare) {
                 $vat_percentage = $spare->vat;
-                }
-                }
-                if (!$this->unit_price || !$vat_percentage) {
-                    return 0;
-                    }
-                    
-                    // dd($this->item_no,$vat_percentage);
+            }
+        }
+        if (!$this->unit_price || !$vat_percentage) {
+            return 0;
+        }
+
+        // dd($this->item_no,$vat_percentage);
         return ($this->unit_price * $vat_percentage) / 100;
     }
 
     /**
      * Get discount, fallback to SparePart if not set
      */
-    public function getDiscount()
+    public function getDiscount($data)
     {
-        if ($this->discount !== null) {
-            return $this->discount;
-        }
-        if ($this->item_no) {
+        $discount_percentage = $data['discount'] ?? null;
+        if ((!$discount_percentage || $discount_percentage == 0) && $this->item_no) {
             $spare = SparePart::where('part_number', $this->item_no)->first();
             if ($spare) {
-                return $spare->discount;
+                $discount_percentage = $spare->discount;
             }
         }
-        return 0;
+        if (!$this->unit_price || !$discount_percentage) {
+            return 0;
+        }
+        return ($this->unit_price * $discount_percentage) / 100;
     }
+
 
     /**
      * Calculate total cost: (Quantity * Unit Price) - Discount + VAT
@@ -75,10 +77,11 @@ class items extends Model
         if (!$this->quantity || !$this->unit_price) {
             return 0;
         }
-        $subtotal = $this->quantity * $this->unit_price;
-        $discount = $this->getDiscount();
+        $discount = $this->getDiscount($data);
         $vat = $this->calculateVAT($data);
-        return $subtotal - $discount + $vat;
+        // dd($this->unit_price, $discount, $vat);
+        $subtotal = $this->quantity * (($this->unit_price - $discount) + $vat);
+        return $subtotal;
     }
 
     /**

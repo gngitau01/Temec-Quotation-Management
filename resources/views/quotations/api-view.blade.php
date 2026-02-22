@@ -157,7 +157,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unit</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Unit Price</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">VAT</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
                             </tr>
