@@ -124,14 +124,14 @@
                 <h3 class="text-lg font-semibold text-gray-900 p-6 border-b">Quotation Items</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-100">
+                        <thead class="bg-gray-100" id="ViewDetailsItemsTable">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Item #</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Description</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unit</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Unit Price</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">VAT</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
                             </tr>
@@ -150,6 +150,12 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                            <tr>
+                                <td colspan="7" class="px-6 py-3 text-right text-sm font-semibold text-gray-700 uppercase">Grand Total</td>
+                                <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ number_format($items->sum('total_cost'), 2) }}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

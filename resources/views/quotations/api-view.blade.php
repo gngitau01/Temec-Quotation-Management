@@ -170,6 +170,12 @@
                                 </td>
                             </tr>
                         </tbody>
+                        <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                            <tr>
+                                <td colspan="7" class="px-6 py-3 text-right text-sm font-semibold text-gray-700 uppercase">Grand Total</td>
+                                <td id="itemsGrandTotal" class="px-6 py-3 text-right text-sm font-bold text-gray-900">0.00</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -480,6 +486,8 @@ function selectQuotation(id) {
                         <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">${formatCurrency(item.total_cost)}</td>
                     </tr>
                 `).join('');
+            const grandTotal = items.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
+            document.getElementById('itemsGrandTotal').textContent = formatCurrency(grandTotal);
         } else {
             tableBody.innerHTML = `
                     <tr>
@@ -489,6 +497,7 @@ function selectQuotation(id) {
                         </td>
                     </tr>
                 `;
+            document.getElementById('itemsGrandTotal').textContent = formatCurrency(0);
         }
 
         document.getElementById('quotationContent').classList.remove('hidden');
