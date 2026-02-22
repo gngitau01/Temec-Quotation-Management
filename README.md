@@ -54,6 +54,52 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## API Documentation
+
+### Authentication
+
+#### Password Reset (API)
+
+1. **Forgot Password**
+   - **Endpoint:** `POST /api/auth/forgot-password`
+   - **Body:**
+     ```json
+     {
+       "email": "user@example.com"
+     }
+     ```
+   - **Response:** OTP sent to email
+
+2. **Verify OTP**
+   - **Endpoint:** `POST /api/auth/verify-otp`
+   - **Body:**
+     ```json
+     {
+       "email": "user@example.com",
+       "otp": "123456"
+     }
+     ```
+   - **Response:** OTP verified with reset token
+
+3. **Reset Password**
+   - **Endpoint:** `POST /api/auth/reset-password`
+   - **Body:**
+     ```json
+     {
+       "email": "user@example.com",
+       "otp": "123456",
+       "password": "newpassword",
+       "password_confirmation": "newpassword"
+     }
+     ```
+   - **Response:** Password reset successfully
+
+#### Password Reset (Web Interface)
+
+1. **Forgot Password Page:** `GET /forgot-password`
+2. **Verify OTP Page:** `GET /verify-otp?email=user@example.com`
+3. **Reset Password Page:** `GET /reset-password?email=user@example.com&otp=123456`
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

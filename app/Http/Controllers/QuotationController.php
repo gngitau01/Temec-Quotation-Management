@@ -234,7 +234,24 @@ class QuotationController extends Controller
         $vendor = vendors::where('quotation_id', $id)->first();
         $buyer = buyers::where('quotation_id', $id)->first();
         $items = items::where('quotation_id', $id)->get();
-
+        // Ensure VAT and Discount are set from SparePart if missing, and recalculate total_cost
+        foreach ($items as $item) {
+            $spare = null;
+            if ($item->item_no) {
+                $spare = \App\Models\SparePart::where('part_number', $item->item_no)->first();
+            }
+            if ($spare) {
+                if ($item->vat_percentage == 0 || $item->vat_percentage === null) {
+                    $item->vat_percentage = $spare->vat;
+                }
+                if ($item->discount === null) {
+                    $item->discount = $spare->discount;
+                }
+                $item->vat = $item->calculateVAT();
+                $item->total_cost = $item->calculateTotalCost();
+                $item->save();
+            }
+        }
         return view('quotations.details', compact('quotation', 'vendor', 'buyer', 'items'));
     }
 

@@ -30,47 +30,92 @@ class items extends Model
 
     /**
      * Calculate VAT based on unit price and VAT percentage
+     * If not set, fetch from SparePart
      */
-    public function calculateVAT()
+    public function calculateVAT($data)
     {
-        if (!$this->unit_price || !$this->vat_percentage) {
-            return 0;
+        $vat_percentage = $data['vat_percentage'] ?? null;
+        // dd($vat_percentage);
+        if ((!$vat_percentage || $vat_percentage == 0) && $this->item_no) {
+            $spare = SparePart::where('part_number', $this->item_no)->first();
+            if ($spare) {
+                $vat_percentage = $spare->vat;
+                }
+                }
+                if (!$this->unit_price || !$vat_percentage) {
+                    return 0;
+                    }
+                    
+                    // dd($this->item_no,$vat_percentage);
+        return ($this->unit_price * $vat_percentage) / 100;
+    }
+
+    /**
+     * Get discount, fallback to SparePart if not set
+     */
+    public function getDiscount()
+    {
+        if ($this->discount !== null) {
+            return $this->discount;
         }
-        return ($this->unit_price * $this->vat_percentage) / 100;
+        if ($this->item_no) {
+            $spare = SparePart::where('part_number', $this->item_no)->first();
+            if ($spare) {
+                return $spare->discount;
+            }
+        }
+        return 0;
     }
 
     /**
      * Calculate total cost: (Quantity * Unit Price) - Discount + VAT
      */
-    public function calculateTotalCost()
+    public function calculateTotalCost($data)
     {
         if (!$this->quantity || !$this->unit_price) {
             return 0;
         }
         $subtotal = $this->quantity * $this->unit_price;
-        $discount = $this->discount ?? 0;
-        $vat = $this->vat ?? 0;
+        $discount = $this->getDiscount();
+        $vat = $this->calculateVAT($data);
         return $subtotal - $discount + $vat;
     }
 
     /**
-     * Update item pricing
+     * Update item pricing.
+     * Accepts unit_price, discount, and vat_percentage from request (like unit_price).
+     * Falls back to SparePart values only when not provided in $data.
      */
     public function updatePricing($data)
     {
-        if (isset($data['unit_price'])) {
+        if (array_key_exists('unit_price', $data)) {
             $this->unit_price = $data['unit_price'];
         }
-        if (isset($data['discount'])) {
-            $this->discount = $data['discount'];
-        }
-        if (isset($data['vat_percentage'])) {
-            $this->vat_percentage = $data['vat_percentage'];
+
+        $spare = $this->item_no ? SparePart::where('part_number', $this->item_no)->first() : null;
+
+        // Use request values when provided; otherwise fall back to SparePart or zero
+        if (array_key_exists('vat_percentage', $data) && $data['vat_percentage'] !== null && $data['vat_percentage'] !== '') {
+            $this->vat_percentage = is_numeric($data['vat_percentage']) ? (string) round((float) $data['vat_percentage'], 2) : '0';
+        } elseif ($spare && is_numeric($spare->vat)) {
+            $this->vat_percentage = (string) round((float) $spare->vat, 2);
+        } else {
+            $this->vat_percentage = '0';
         }
 
-        // Recalculate VAT and Total Cost
-        $this->vat = $this->calculateVAT();
-        $this->total_cost = $this->calculateTotalCost();
+        if (array_key_exists('discount', $data) && $data['discount'] !== null && $data['discount'] !== '') {
+            $this->discount = is_numeric($data['discount']) ? (string) round((float) $data['discount'], 2) : '0';
+        } elseif ($spare && is_numeric($spare->discount)) {
+            $this->discount = (string) round((float) $spare->discount, 2);
+        } else {
+            $this->discount = '0';
+        }
+
+        // Recalculate VAT amount and total cost
+        $vatValue = round($this->calculateVAT($data), 2);
+        $totalCostValue = round($this->calculateTotalCost($data), 2);
+        $this->vat = is_numeric($vatValue) ? (string) $vatValue : null;
+        $this->total_cost = is_numeric($totalCostValue) ? (string) $totalCostValue : null;
         $this->save();
 
         return $this;

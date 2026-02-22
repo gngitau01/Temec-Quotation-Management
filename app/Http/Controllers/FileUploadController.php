@@ -354,7 +354,8 @@ class FileUploadController extends Controller
     }
 
     /**
-     * Get item pricing details
+     * Get item pricing details (unit_price, discount, vat_percentage, vat, total_cost).
+     * Optionally includes spare_part_suggestion when item_no matches a SparePart.
      * GET /api/item/{itemId}/pricing
      */
     public function getItemPricing($itemId)
@@ -362,20 +363,31 @@ class FileUploadController extends Controller
         try {
             $item = items::findOrFail($itemId);
 
+            $data = [
+                'id' => $item->id,
+                'item_no' => $item->item_no,
+                'description' => $item->description,
+                'quantity' => $item->quantity,
+                'unit' => $item->unit,
+                'unit_price' => $item->unit_price,
+                'discount' => $item->discount,
+                'vat_percentage' => $item->vat_percentage,
+                'vat' => $item->vat,
+                'total_cost' => $item->total_cost,
+            ];
+
+            $spare = $item->item_no ? \App\Models\SparePart::where('part_number', $item->item_no)->first() : null;
+            if ($spare) {
+                $data['spare_part_suggestion'] = [
+                    'unit_price' => $spare->amount_per_unit,
+                    'discount' => $spare->discount,
+                    'vat_percentage' => $spare->vat,
+                ];
+            }
+
             return response()->json([
                 'status' => 'success',
-                'data' => [
-                    'id' => $item->id,
-                    'item_no' => $item->item_no,
-                    'description' => $item->description,
-                    'quantity' => $item->quantity,
-                    'unit' => $item->unit,
-                    'unit_price' => $item->unit_price,
-                    'discount' => $item->discount,
-                    'vat_percentage' => $item->vat_percentage,
-                    'vat' => $item->vat,
-                    'total_cost' => $item->total_cost
-                ]
+                'data' => $data
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -486,7 +498,7 @@ class FileUploadController extends Controller
     public function listQuotationsWithSummary()
     {
         try {
-            $quotations = quotation_info::with(['vendor', 'buyers', 'items'])->get();
+            $quotations = quotation_info::with(['vendor', 'buyers', 'items'])->orderByDesc('id')->get();
             
             $quotationList = $quotations->map(function ($quotation) {
                 $items = $quotation->items ?? collect();

@@ -14,5 +14,7 @@ class SparePart extends Model
         'name',
         'description',
         'amount_per_unit',
+        'vat',
+        'discount',
     ];
 }
