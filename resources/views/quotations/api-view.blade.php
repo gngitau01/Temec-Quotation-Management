@@ -14,17 +14,17 @@
     <!-- Tabs Navigation -->
     <div class="mb-6 border-b border-gray-200">
         <div class="flex gap-4">
-            <button type="button" onclick="switchTab('list')" class="tab-btn active px-4 py-3 text-gray-700 border-b-2 border-transparent font-medium hover:text-purple-600">
+            <button type="button" onclick="switchTab('list')" class="tab-btn px-4 py-3 text-gray-700 border-b-2 border-purple-600 font-medium hover:text-purple-600" data-tab="list">
                 <i class="fas fa-list mr-2"></i> Browse All Quotations
             </button>
-            <button type="button" onclick="switchTab('search')" class="tab-btn  px-4 py-3 text-gray-700 border-b-2 border-purple-600 font-medium">
+            <button type="button" onclick="switchTab('search')" class="tab-btn px-4 py-3 text-gray-700 border-b-2 border-transparent font-medium hover:text-purple-600" data-tab="search">
                 <i class="fas fa-search mr-2"></i> Search Quotation
             </button>
         </div>
     </div>
 
-    <!-- Search Tab -->
-    <div id="search-tab" class="tab-content">
+    <!-- Search Tab (hidden by default) -->
+    <div id="search-tab" class="tab-content hidden">
         <!-- Search/Filter Section -->
         <div class="bg-white p-6 rounded shadow mb-6">
             <form id="quotationForm" class="flex gap-3">
@@ -251,8 +251,8 @@
         </div>
     </div>
 
-    <!-- List Tab -->
-    <div id="list-tab" class="tab-content hidden">
+    <!-- List Tab (visible by default) -->
+    <div id="list-tab" class="tab-content">
         <!-- Loading State for List -->
         <div id="listLoadingSpinner" class="hidden text-center py-8">
             <i class="fas fa-spinner fa-spin text-4xl text-purple-600"></i>
@@ -262,15 +262,27 @@
         <!-- Quotations List Table -->
         <div id="quotationsListContainer" class="bg-white rounded shadow overflow-hidden hidden">
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" id="quotationsTableList">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Document Number</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Vendor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Buyer</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Items</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="document_number" title="Sort by Document Number">
+                                Document Number <span class="sort-indicator" data-for="document_number"></span>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="date" title="Sort by Date">
+                                Date <span class="sort-indicator" data-for="date"></span>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="vendor_name" title="Sort by Vendor">
+                                Vendor <span class="sort-indicator" data-for="vendor_name"></span>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="buyer_name" title="Sort by Buyer">
+                                Buyer <span class="sort-indicator" data-for="buyer_name"></span>
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="item_count" title="Sort by Items">
+                                Items <span class="sort-indicator" data-for="item_count"></span>
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase cursor-pointer hover:bg-gray-200 select-none" data-sort="total_cost" title="Sort by Total Cost">
+                                Total Cost <span class="sort-indicator" data-for="total_cost"></span>
+                            </th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">Action</th>
                         </tr>
                     </thead>
@@ -283,6 +295,27 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Pagination -->
+            <div id="quotationsPagination" class="hidden px-6 py-4 border-t border-gray-200 flex flex-wrap items-center justify-between gap-4">
+                <div class="text-sm text-gray-600">
+                    <span id="quotationsPaginationInfo">Showing 0–0 of 0</span>
+                    <label class="ml-4 inline-flex items-center gap-1">
+                        Per page
+                        <select id="quotationsPerPage" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="quotationsPrevPage" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+                    <span id="quotationsPageNumbers" class="text-sm text-gray-700"></span>
+                    <button type="button" id="quotationsNextPage" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next</button>
+                </div>
             </div>
         </div>
 
@@ -324,6 +357,13 @@
         }
     }
 
+    // List state for sorting and pagination
+    let allQuotationsList = [];
+    let listCurrentPage = 1;
+    let listPerPage = 10;
+    let listSortBy = 'id';
+    let listSortDir = 'desc';
+
     // Load all quotations
     function loadQuotationsList() {
         document.getElementById('listLoadingSpinner').classList.remove('hidden');
@@ -339,13 +379,19 @@
             })
             .then(data => {
                 if (data.status === 'success' && data.data.length > 0) {
-                    displayQuotationsList(data.data);
+                    allQuotationsList = data.data;
+                    listCurrentPage = 1;
+                    renderQuotationsTable();
+                    document.getElementById('quotationsListContainer').classList.remove('hidden');
+                    document.getElementById('quotationsPagination').classList.remove('hidden');
                 } else {
+                    allQuotationsList = [];
                     document.getElementById('emptyStateList').classList.remove('hidden');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                allQuotationsList = [];
                 document.getElementById('emptyStateList').classList.remove('hidden');
             })
             .finally(() => {
@@ -353,31 +399,116 @@
             });
     }
 
-    // Display quotations in table
-    function displayQuotationsList(quotations) {
-        const tableBody = document.getElementById('quotationsTableBody');
-        
-        if (quotations.length > 0) {
-            tableBody.innerHTML = quotations.map(q => `
-                <tr class="border-t hover:bg-gray-50">
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">${q.document_number || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">${formatDate(q.date)}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">${q.vendor_name || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">${q.buyer_name || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-center text-gray-600"><span class="bg-gray-100 px-3 py-1 rounded-full">${q.item_count}</span></td>
-                    <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">${formatCurrency(q.total_cost)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <button type="button" id="viewDetailsBtn" onclick="selectQuotation(${q.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm">
-                            <i class="fas fa-check mr-1"></i> View
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('quotationsListContainer').classList.remove('hidden');
-        } else {
-            document.getElementById('emptyStateList').classList.remove('hidden');
-        }
+    function sortQuotationsList() {
+        const key = listSortBy;
+        const dir = listSortDir === 'asc' ? 1 : -1;
+        allQuotationsList.sort((a, b) => {
+            let va = a[key];
+            let vb = b[key];
+            if (key === 'date') {
+                va = va ? new Date(va).getTime() : 0;
+                vb = vb ? new Date(vb).getTime() : 0;
+            }
+            if (key === 'total_cost' || key === 'item_count') {
+                va = parseFloat(va) || 0;
+                vb = parseFloat(vb) || 0;
+            }
+            if (key === 'document_number' || key === 'vendor_name' || key === 'buyer_name') {
+                va = (va || '').toString().toLowerCase();
+                vb = (vb || '').toString().toLowerCase();
+            }
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+        });
     }
+
+    function renderQuotationsTable() {
+        sortQuotationsList();
+        const total = allQuotationsList.length;
+        const totalPages = Math.max(1, Math.ceil(total / listPerPage));
+        listCurrentPage = Math.min(listCurrentPage, totalPages);
+        const start = (listCurrentPage - 1) * listPerPage;
+        const end = Math.min(start + listPerPage, total);
+        const pageData = allQuotationsList.slice(start, end);
+
+        const tableBody = document.getElementById('quotationsTableBody');
+        tableBody.innerHTML = pageData.map(q => `
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">${q.document_number || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">${formatDate(q.date)}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">${q.vendor_name || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">${q.buyer_name || '-'}</td>
+                <td class="px-6 py-4 text-sm text-center text-gray-600"><span class="bg-gray-100 px-3 py-1 rounded-full">${q.item_count}</span></td>
+                <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">${formatCurrency(q.total_cost)}</td>
+                <td class="px-6 py-4 text-center">
+                    <button type="button" onclick="selectQuotation(${q.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm">
+                        <i class="fas fa-check mr-1"></i> View
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        // Sort indicators
+        document.querySelectorAll('#quotationsTableList thead th[data-sort]').forEach(th => {
+            const span = th.querySelector('.sort-indicator');
+            if (!span) return;
+            const col = th.getAttribute('data-sort');
+            if (col === listSortBy) {
+                span.textContent = listSortDir === 'asc' ? ' \u25B2' : ' \u25BC';
+                span.classList.add('text-purple-600');
+            } else {
+                span.textContent = '';
+                span.classList.remove('text-purple-600');
+            }
+        });
+
+        // Pagination info
+        document.getElementById('quotationsPaginationInfo').textContent =
+            total === 0 ? 'Showing 0 of 0' : `Showing ${start + 1}\u2013${end} of ${total}`;
+        document.getElementById('quotationsPrevPage').disabled = listCurrentPage <= 1;
+        document.getElementById('quotationsNextPage').disabled = listCurrentPage >= totalPages;
+        const pageNumbersEl = document.getElementById('quotationsPageNumbers');
+        pageNumbersEl.textContent = `Page ${listCurrentPage} of ${totalPages}`;
+    }
+
+    function goToQuotationsPage(page) {
+        const totalPages = Math.max(1, Math.ceil(allQuotationsList.length / listPerPage));
+        listCurrentPage = Math.max(1, Math.min(page, totalPages));
+        renderQuotationsTable();
+    }
+
+    // Sort when column header is clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        loadQuotationsList();
+
+        document.getElementById('quotationsTableList').addEventListener('click', function(e) {
+            const th = e.target.closest('th[data-sort]');
+            if (!th) return;
+            const key = th.getAttribute('data-sort');
+            if (listSortBy === key) {
+                listSortDir = listSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                listSortBy = key;
+                listSortDir = (key === 'date' || key === 'total_cost' || key === 'item_count') ? 'desc' : 'asc';
+            }
+            listCurrentPage = 1;
+            renderQuotationsTable();
+        });
+
+        document.getElementById('quotationsPrevPage').addEventListener('click', function() {
+            if (listCurrentPage > 1) goToQuotationsPage(listCurrentPage - 1);
+        });
+        document.getElementById('quotationsNextPage').addEventListener('click', function() {
+            const totalPages = Math.max(1, Math.ceil(allQuotationsList.length / listPerPage));
+            if (listCurrentPage < totalPages) goToQuotationsPage(listCurrentPage + 1);
+        });
+        document.getElementById('quotationsPerPage').addEventListener('change', function() {
+            listPerPage = parseInt(this.value, 10);
+            listCurrentPage = 1;
+            renderQuotationsTable();
+        });
+    });
 function selectQuotation(id) {
     // Do whatever logic you need
     console.log("Selected quotation id:", id);
