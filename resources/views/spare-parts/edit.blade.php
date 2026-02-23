@@ -38,6 +38,24 @@
                     @enderror
                 </div>
 
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">VAT (%)</label>
+                    <input type="number" step="0.01" name="vat" value="{{ old('vat', $sparePart->vat) }}"
+                        class="w-full border @error('vat') border-red-500 @else border-gray-300 @enderror rounded px-4 py-2">
+                    @error('vat')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
+                    <input type="number" step="0.01" name="discount" value="{{ old('discount', $sparePart->discount) }}"
+                        class="w-full border @error('discount') border-red-500 @else border-gray-300 @enderror rounded px-4 py-2">
+                    @error('discount')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Amount per Unit *</label>
                     <input type="number" step="0.01" name="amount_per_unit" value="{{ old('amount_per_unit', $sparePart->amount_per_unit) }}" required

@@ -43,6 +43,8 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Amount per Unit</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">VAT (%)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
                     </tr>
                 </thead>
@@ -53,6 +55,8 @@
                             <td class="px-6 py-4 text-sm text-gray-900">{{ $sparePart->name }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ $sparePart->description }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">${{ number_format($sparePart->amount_per_unit, 2) }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ number_format($sparePart->vat, 2) }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ number_format($sparePart->discount, 2) }}</td>
                             <td class="px-6 py-4 text-sm space-x-2">
                                 <a href="{{ route('spare-parts.edit', $sparePart->id) }}" class="text-yellow-600 hover:text-yellow-900">
                                     <i class="fas fa-edit"></i>

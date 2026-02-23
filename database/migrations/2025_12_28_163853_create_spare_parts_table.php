@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('amount_per_unit', 10, 2);
+            $table->decimal('vat', 5, 2)->default(0); // VAT percentage
+            $table->decimal('discount', 5, 2)->default(0); // Discount percentage
             $table->timestamps();
         });
     }
