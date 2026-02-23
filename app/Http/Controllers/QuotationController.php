@@ -126,14 +126,21 @@ class QuotationController extends Controller
                         
                         foreach ($data['items'] as $item) {
                             if (is_array($item)) {
+                                $unitPrice = !empty($item['unitPrice']) ? (float) $item['unitPrice'] : 0;
+                                $discountPercent = !empty($item['discount']) ? (float) $item['discount'] : 0;
+                                $discountValue = ($unitPrice > 0 && $discountPercent > 0)
+                                    ? ($unitPrice * $discountPercent) / 100
+                                    : 0;
+
                                 items::create([
                                     'quotation_id' => $quotation->id,
                                     'item_no' => $item['itemNo'] ?? $item['item_no'] ?? null,
                                     'description' => $item['description'] ?? null,
                                     'quantity' => !empty($item['quantity']) ? (float) $item['quantity'] : 0,
                                     'unit' => $item['unit'] ?? null,
-                                    'unit_price' => !empty($item['unitPrice']) ? (float) $item['unitPrice'] : 0,
-                                    'discount' => !empty($item['discount']) ? (float) $item['discount'] : null,
+                                    'unit_price' => $unitPrice ?: 0,
+                                    'discount' => $discountPercent ?: null,
+                                    'discount_value' => $discountValue ?: null,
                                     'vat' => !empty($item['vat']) ? (float) $item['vat'] : null,
                                     'vat_percentage' => (float) ($item['vatPercentage'] ?? $item['vat_percentage'] ?? 0),
                                     'total_cost' => !empty($item['totalCost']) ? (float) $item['totalCost'] : null,

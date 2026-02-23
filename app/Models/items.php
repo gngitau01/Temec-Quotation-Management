@@ -13,7 +13,8 @@ class items extends Model
         'quantity',
         'unit',
         'unit_price',
-        'discount',
+        'discount', // percentage
+        'discount_value', // per-unit monetary discount
         'vat',
         'vat_percentage',
         'total_cost'
@@ -23,6 +24,7 @@ class items extends Model
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'discount' => 'decimal:2',
+        'discount_value' => 'decimal:2',
         'vat' => 'decimal:2',
         'vat_percentage' => 'decimal:2',
         'total_cost' => 'decimal:2'
@@ -113,6 +115,10 @@ class items extends Model
         } else {
             $this->discount = '0';
         }
+
+        // Compute and persist per-unit discount price
+        $discountValue = round($this->getDiscount($data), 2);
+        $this->discount_value = is_numeric($discountValue) ? (string) $discountValue : null;
 
         // Recalculate VAT amount and total cost
         $vatValue = round($this->calculateVAT($data), 2);

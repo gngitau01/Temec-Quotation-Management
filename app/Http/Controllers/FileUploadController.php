@@ -161,14 +161,21 @@ class FileUploadController extends Controller
 
                 // Create items
                 foreach ($items as $item) {
+                    $unitPrice = !empty($item['unitPrice']) ? (float) $item['unitPrice'] : 0;
+                    $discountPercent = !empty($item['discount']) ? (float) $item['discount'] : 0;
+                    $discountValue = ($unitPrice > 0 && $discountPercent > 0)
+                        ? ($unitPrice * $discountPercent) / 100
+                        : 0;
+
                     items::create([
                         'quotation_id' => $document->id,
                         'item_no' => $item['itemNo'],
                         'description' => $item['description'],
                         'quantity' => $item['quantity'],
                         'unit' => $item['unit'],
-                        'unit_price' => $item['unitPrice'] ? floatval($item['unitPrice']) : null,
-                        'discount' => $item['discount'] ? floatval($item['discount']) : null,
+                        'unit_price' => $unitPrice ?: null,
+                        'discount' => $discountPercent ?: null,
+                        'discount_value' => $discountValue ?: null,
                         'vat' => $item['vat'] ? floatval($item['vat']) : null,
                         'total_cost' => $item['totalCost'] ? floatval($item['totalCost']) : null,
                     ]);

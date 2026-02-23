@@ -131,7 +131,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unit</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Unit Price</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">VAT</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
                             </tr>
@@ -144,7 +144,15 @@
                                     <td class="px-6 py-4 text-sm text-gray-900 text-right">{{ number_format($item->quantity, 2) }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ $item->unit }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-900 text-right">{{ $item->unit_price ? number_format($item->unit_price, 2) : 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-900 text-right">{{ $item->discount ? number_format($item->discount, 2) : '0.00' }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 text-right">
+                                        @php
+                                            $discountValue = $item->discount_value;
+                                            if ($discountValue === null && $item->unit_price && $item->discount) {
+                                                $discountValue = ($item->unit_price * $item->discount) / 100;
+                                            }
+                                        @endphp
+                                        {{ $discountValue !== null ? number_format($discountValue, 2) : '0.00' }}
+                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-900 text-right">{{ $item->vat ? number_format($item->vat, 2) : '0.00' }}</td>
                                     <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">{{ $item->total_cost ? number_format($item->total_cost, 2) : 'N/A' }}</td>
                                 </tr>

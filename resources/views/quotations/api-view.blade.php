@@ -157,7 +157,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unit</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Unit Price</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">VAT</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
                             </tr>
@@ -510,9 +510,6 @@
         });
     });
 function selectQuotation(id) {
-    // Do whatever logic you need
-    console.log("Selected quotation id:", id);
-
     // Navigate to details page
     window.location.href = `/quotations/${id}/details`;
 }
@@ -605,18 +602,27 @@ function selectQuotation(id) {
         // Populate items table
         const tableBody = document.getElementById('itemsTableBody');
         if (items.length > 0) {
-            tableBody.innerHTML = items.map(item => `
+            tableBody.innerHTML = items.map(item => {
+                const unitPrice = item.unit_price != null ? parseFloat(item.unit_price) : 0;
+                const discountPercent = item.discount != null ? parseFloat(item.discount) : 0;
+                const discountPerUnitFromDb = item.discount_value != null ? parseFloat(item.discount_value) : null;
+                const discountPerUnit = discountPerUnitFromDb !== null
+                    ? discountPerUnitFromDb
+                    : (unitPrice > 0 && discountPercent > 0 ? (unitPrice * discountPercent) / 100 : 0);
+
+                return `
                     <tr class="border-t hover:bg-gray-50">
                         <td class="px-6 py-4 text-sm text-gray-900">${item.item_no || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.description || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatNumber(item.quantity)}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.unit || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.unit_price)}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.discount)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(discountPerUnit)}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.vat)}</td>
                         <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">${formatCurrency(item.total_cost)}</td>
                     </tr>
-                `).join('');
+                `;
+            }).join('');
             const grandTotal = items.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
             document.getElementById('itemsGrandTotal').textContent = formatCurrency(grandTotal);
         } else {
