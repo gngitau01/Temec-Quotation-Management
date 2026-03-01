@@ -2,6 +2,18 @@
 
 @section('title', 'Settings')
 
+@section('styles')
+    <style>
+        .create-account-btn {
+            background: linear-gradient(180deg, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        .create-account-btn:hover {
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="max-w-2xl">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
@@ -60,10 +72,9 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Change Password</label>
-                            <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
-                                <i class="fas fa-key mr-2"></i> Update Password
-                            </button>
+                            <a href="{{ route('register') }}" class="create-account-btn inline-flex items-center px-5 py-2.5 rounded-2xl text-white font-medium no-underline transition hover:opacity-95 active:scale-[0.98]">
+                                <i class="fas fa-user-plus mr-2"></i> Create account
+                            </a>
                         </div>
                     </div>
                 </div>
