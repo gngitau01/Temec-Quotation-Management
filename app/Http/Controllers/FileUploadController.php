@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Models\WebsiteSetting;
 
 class FileUploadController extends Controller
 {
@@ -143,9 +144,10 @@ class FileUploadController extends Controller
             ];
 
             $items = $responseData['items'];
+            $defaultVat = WebsiteSetting::current()->vat_percentage ?? 0;
 
             // Use database transaction to ensure data consistency
-            DB::transaction(function () use ($documentInfo, $vendorInfo, $buyerInfo, $items) {
+            DB::transaction(function () use ($documentInfo, $vendorInfo, $buyerInfo, $items, $defaultVat) {
                 $document = quotation_info::create($documentInfo);
 
                 // Create or update vendor
@@ -167,6 +169,10 @@ class FileUploadController extends Controller
                         ? ($unitPrice * $discountPercent) / 100
                         : 0;
 
+                    $vatPercentage = isset($item['vatPercentage']) || isset($item['vat_percentage'])
+                        ? (float) ($item['vatPercentage'] ?? $item['vat_percentage'])
+                        : (float) $defaultVat;
+
                     items::create([
                         'quotation_id' => $document->id,
                         'item_no' => $item['itemNo'],
@@ -177,6 +183,7 @@ class FileUploadController extends Controller
                         'discount' => $discountPercent ?: null,
                         'discount_value' => $discountValue ?: null,
                         'vat' => $item['vat'] ? floatval($item['vat']) : null,
+                        'vat_percentage' => $vatPercentage,
                         'total_cost' => $item['totalCost'] ? floatval($item['totalCost']) : null,
                     ]);
                 }
@@ -252,10 +259,6 @@ class FileUploadController extends Controller
         }
     }
 
-    /**
-     * Update item pricing (unit_price, discount, vat_percentage)
-     * POST /api/item/{itemId}/pricing
-     */
     public function updateItemPricing(Request $request, $itemId)
     {
         try {
@@ -264,10 +267,10 @@ class FileUploadController extends Controller
             $request->validate([
                 'unit_price' => 'sometimes|numeric|min:0',
                 'discount' => 'sometimes|numeric|min:0',
-                'vat_percentage' => 'sometimes|numeric|min:0|max:100'
             ]);
 
-            $item->updatePricing($request->only(['unit_price', 'discount', 'vat_percentage']));
+            // VAT percentage is always taken from WebsiteSetting inside updatePricing()
+            $item->updatePricing($request->only(['unit_price', 'discount']));
 
             return response()->json([
                 'status' => 'success',
@@ -307,64 +310,7 @@ class FileUploadController extends Controller
         }
     }
 
-    /**
-     * Update VAT percentage for an item
-     * PUT /api/item/{itemId}/vat-percentage
-     */
-    public function updateVATPercentage(Request $request, $itemId)
-    {
-        try {
-            $item = items::findOrFail($itemId);
 
-            $request->validate([
-                'vat_percentage' => 'required|numeric|min:0|max:100'
-            ]);
-
-            $item->updatePricing([
-                'vat_percentage' => $request->vat_percentage
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'VAT percentage updated successfully',
-                'data' => [
-                    'id' => $item->id,
-                    'vat_percentage' => $item->vat_percentage,
-                    'vat' => $item->vat,
-                    'total_cost' => $item->total_cost
-                ]
-            ], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Item not found',
-                'item_id' => $itemId
-            ], 404);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Error updating VAT percentage', [
-                'item_id' => $itemId,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to update VAT percentage',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
-        }
-    }
-
-    /**
-     * Get item pricing details (unit_price, discount, vat_percentage, vat, total_cost).
-     * Optionally includes spare_part_suggestion when item_no matches a SparePart.
-     * GET /api/item/{itemId}/pricing
-     */
     public function getItemPricing($itemId)
     {
         try {
@@ -388,7 +334,7 @@ class FileUploadController extends Controller
                 $data['spare_part_suggestion'] = [
                     'unit_price' => $spare->amount_per_unit,
                     'discount' => $spare->discount,
-                    'vat_percentage' => $spare->vat,
+                    'vat_percentage' => WebsiteSetting::current()->vat_percentage,
                 ];
             }
 

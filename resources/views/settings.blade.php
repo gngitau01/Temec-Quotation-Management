@@ -8,55 +8,52 @@
 
         <div class="bg-white rounded shadow p-6">
             <div class="space-y-6">
-                <!-- Application Settings -->
+                @if(auth()->user()->role === 'admin')
+                <!-- Website Settings -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Application Settings</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">API Endpoint</label>
-                            <input type="url" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="Enter API endpoint URL">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Folder</label>
-                            <input type="text" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="storage/uploads">
-                        </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Website Settings</h3>
+                        <button id="btnReloadWebsiteSettings" type="button" onclick="loadWebsiteSettings()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition">
+                            <i class="fas fa-sync mr-2"></i> Reload
+                        </button>
                     </div>
-                </div>
 
-                <!-- VAT Settings -->
-                <div class="border-t pt-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">VAT Settings (per item)</h3>
                     <div class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Item ID</label>
-                                <input id="vat_item_id" type="number" min="1" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="Enter item ID">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time Zone</label>
+                                <input id="ws_time_zone" type="text" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="e.g. UTC or Asia/Kolkata">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                                <input id="ws_currency" type="text" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="e.g. USD, EUR, INR">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">VAT Percentage (%)</label>
-                                <input id="vat_percentage" type="number" step="0.01" min="0" max="100" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="e.g. 16">
-                            </div>
-                            <div class="flex gap-2">
-                                <button id="btnUpdateVat" type="button" onclick="updateVatPercentage()" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition">
-                                    <i class="fas fa-percentage mr-2"></i> Update VAT
-                                </button>
-                                <button id="btnFetchPricing" type="button" onclick="fetchItemPricing()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition">
-                                    <i class="fas fa-sync mr-2"></i> Fetch
-                                </button>
+                                <input id="ws_vat_percentage" type="number" step="0.01" min="0" max="100" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="e.g. 16">
                             </div>
                         </div>
 
-                        <div id="vatResult" class="hidden bg-gray-50 border rounded p-4">
-                            <p class="text-sm text-gray-600">Item: <span id="res_item_no">-</span></p>
-                            <p class="text-sm text-gray-600">Quantity: <span id="res_quantity">-</span></p>
-                            <p class="text-sm text-gray-600">Unit Price: <span id="res_unit_price">-</span></p>
-                            <p class="text-sm text-gray-600">Discount: <span id="res_discount">-</span></p>
-                            <p class="text-sm text-gray-600">VAT %: <span id="res_vat_percentage">-</span></p>
-                            <p class="text-sm text-gray-600">VAT: <span id="res_vat">-</span></p>
-                            <p class="text-sm text-gray-600">Total Cost: <span id="res_total_cost">-</span></p>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">EXTERNAL_API_UPLOAD_URL</label>
+                            <input id="ws_external_api_upload_url" type="url" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="http://.../api/pdf/upload">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">EXTERNAL_API_CREATE_QUOTATION_URL</label>
+                            <input id="ws_external_api_create_quotation_url" type="url" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="http://.../api/pdf/create">
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <button id="btnSaveWebsiteSettings" type="button" onclick="saveWebsiteSettings()" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition">
+                                <i class="fas fa-save mr-2"></i> Save Website Settings
+                            </button>
                         </div>
                     </div>
                 </div>
+                @endif
+
+                <!-- VAT Settings per item were removed; VAT is controlled globally via Website Settings. -->
 
                 <!-- Account Settings -->
                 <div class="border-t pt-6">
@@ -70,16 +67,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Save Settings -->
-                <div class="border-t pt-6 flex gap-4">
-                    <button class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition">
-                        <i class="fas fa-save mr-2"></i> Save Changes
-                    </button>
-                    <button class="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 transition">
-                        <i class="fas fa-times mr-2"></i> Cancel
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -87,79 +74,72 @@
 
 @section('scripts')
     <script>
-        async function fetchItemPricing() {
-            const itemId = document.getElementById('vat_item_id').value.trim();
-            if (!itemId) {
-                alert('Please enter an Item ID');
-                return;
-            }
-
-            const btn = document.getElementById('btnFetchPricing');
-            btn.disabled = true;
-            btn.textContent = 'Fetching...';
+        async function loadWebsiteSettings() {
+            const btn = document.getElementById('btnReloadWebsiteSettings');
+            if (btn) btn.disabled = true;
 
             try {
-                const res = await fetch(`/api/item/${itemId}/pricing`);
-                if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || 'Failed to fetch item pricing');
+                const res = await fetch('/api/settings');
+                const payload = await res.json().catch(() => null);
+                if (!res.ok || payload?.status !== 'success') {
+                    throw new Error(payload?.message || 'Failed to load website settings');
                 }
-                const payload = await res.json();
-                if (payload.status !== 'success') throw new Error(payload.message || 'Failed to fetch item');
 
-                const data = payload.data;
-                document.getElementById('res_item_no').textContent = data.item_no || '-';
-                document.getElementById('res_quantity').textContent = data.quantity ?? '-';
-                document.getElementById('res_unit_price').textContent = data.unit_price ?? '-';
-                document.getElementById('res_discount').textContent = data.discount ?? '-';
-                document.getElementById('res_vat_percentage').textContent = data.vat_percentage ?? '-';
-                document.getElementById('res_vat').textContent = data.vat ?? '-';
-                document.getElementById('res_total_cost').textContent = data.total_cost ?? '-';
+                const s = payload.data || {};
+                const setVal = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val ?? '';
+                };
 
-                document.getElementById('vatResult').classList.remove('hidden');
+                setVal('ws_time_zone', s.time_zone);
+                setVal('ws_currency', s.currency);
+                setVal('ws_vat_percentage', s.vat_percentage);
+                setVal('ws_external_api_upload_url', s.external_api_upload_url);
+                setVal('ws_external_api_create_quotation_url', s.external_api_create_quotation_url);
             } catch (e) {
-                alert(e.message || 'Error fetching item pricing');
+                alert(e.message || 'Error loading website settings');
             } finally {
-                btn.disabled = false;
-                btn.textContent = '';
-                // restore icon + text
-                btn.innerHTML = '<i class="fas fa-sync mr-2"></i> Fetch';
+                if (btn) btn.disabled = false;
             }
         }
 
-        async function updateVatPercentage() {
-            const itemId = document.getElementById('vat_item_id').value.trim();
-            const vat = document.getElementById('vat_percentage').value.trim();
-
-            if (!itemId) { alert('Please enter an Item ID'); return; }
-            if (vat === '') { alert('Please enter a VAT percentage'); return; }
-
-            const btn = document.getElementById('btnUpdateVat');
-            btn.disabled = true;
-            btn.textContent = 'Updating...';
+        async function saveWebsiteSettings() {
+            const btn = document.getElementById('btnSaveWebsiteSettings');
+            if (btn) btn.disabled = true;
 
             try {
-                const res = await fetch(`/api/item/${itemId}/vat-percentage`, {
+                const body = {
+                    time_zone: document.getElementById('ws_time_zone')?.value?.trim() || null,
+                    currency: document.getElementById('ws_currency')?.value?.trim() || null,
+                    vat_percentage: document.getElementById('ws_vat_percentage')?.value !== '' ? parseFloat(document.getElementById('ws_vat_percentage').value) : null,
+                    external_api_upload_url: document.getElementById('ws_external_api_upload_url')?.value?.trim() || null,
+                    external_api_create_quotation_url: document.getElementById('ws_external_api_create_quotation_url')?.value?.trim() || null,
+                };
+
+                const res = await fetch('/api/settings', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ vat_percentage: parseFloat(vat) })
+                    body: JSON.stringify(body),
                 });
 
                 const payload = await res.json().catch(() => null);
                 if (!res.ok || payload?.status !== 'success') {
-                    throw new Error(payload?.message || 'Failed to update VAT');
+                    throw new Error(payload?.message || 'Failed to save website settings');
                 }
 
-                alert('VAT percentage updated successfully');
-                // refresh pricing
-                fetchItemPricing();
+                alert('Website settings saved successfully');
+                loadWebsiteSettings();
             } catch (e) {
-                alert(e.message || 'Error updating VAT');
+                alert(e.message || 'Error saving website settings');
             } finally {
-                btn.disabled = false;
-                btn.textContent = '';
-                btn.innerHTML = '<i class="fas fa-percentage mr-2"></i> Update VAT';
+                if (btn) btn.disabled = false;
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.getElementById('ws_time_zone')) {
+                loadWebsiteSettings();
+            }
+        });
     </script>
 @endsection

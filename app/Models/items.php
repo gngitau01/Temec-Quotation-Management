@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\WebsiteSetting;
 
 class items extends Model
 {
@@ -31,33 +32,33 @@ class items extends Model
     ];
 
     /**
-     * Calculate VAT based on unit price and VAT percentage
-     * If not set, fetch from SparePart
+     * Calculate VAT based on discounted unit price and global VAT percentage.
+     * VAT percentage is always taken from WebsiteSetting (global), and
+     * VAT is applied on (unit_price - discount_per_unit).
      */
-    public function calculateVAT($data)
+    public function calculateVAT($data = [])
     {
-        $vat_percentage = $data['vat_percentage'] ?? null;
-        // dd($vat_percentage);
-        if ((!$vat_percentage || $vat_percentage == 0) && $this->item_no) {
-            $spare = SparePart::where('part_number', $this->item_no)->first();
-            if ($spare) {
-                $vat_percentage = $spare->vat;
-            }
-        }
+        $vat_percentage = WebsiteSetting::current()->vat_percentage ?? 0;
         if (!$this->unit_price || !$vat_percentage) {
             return 0;
         }
 
-        // dd($this->item_no,$vat_percentage);
-        return ($this->unit_price * $vat_percentage) / 100;
+        // Per-unit discount in currency
+        $discountPerUnit = $this->getDiscount($data);
+        $taxableUnitPrice = $this->unit_price - $discountPerUnit;
+        if ($taxableUnitPrice < 0) {
+            $taxableUnitPrice = 0;
+        }
+
+        return ($taxableUnitPrice * $vat_percentage) / 100;
     }
 
     /**
      * Get discount, fallback to SparePart if not set
      */
-    public function getDiscount($data)
+    public function getDiscount($data = [])
     {
-        $discount_percentage = $data['discount'] ?? null;
+        $discount_percentage = $data['discount'] ?? $this->discount ?? null;
         if ((!$discount_percentage || $discount_percentage == 0) && $this->item_no) {
             $spare = SparePart::where('part_number', $this->item_no)->first();
             if ($spare) {
@@ -74,7 +75,7 @@ class items extends Model
     /**
      * Calculate total cost: (Quantity * Unit Price) - Discount + VAT
      */
-    public function calculateTotalCost($data)
+    public function calculateTotalCost($data = [])
     {
         if (!$this->quantity || !$this->unit_price) {
             return 0;
@@ -91,7 +92,7 @@ class items extends Model
      * Accepts unit_price, discount, and vat_percentage from request (like unit_price).
      * Falls back to SparePart values only when not provided in $data.
      */
-    public function updatePricing($data)
+    public function updatePricing($data = [])
     {
         if (array_key_exists('unit_price', $data)) {
             $this->unit_price = $data['unit_price'];
@@ -99,14 +100,9 @@ class items extends Model
 
         $spare = $this->item_no ? SparePart::where('part_number', $this->item_no)->first() : null;
 
-        // Use request values when provided; otherwise fall back to SparePart or zero
-        if (array_key_exists('vat_percentage', $data) && $data['vat_percentage'] !== null && $data['vat_percentage'] !== '') {
-            $this->vat_percentage = is_numeric($data['vat_percentage']) ? (string) round((float) $data['vat_percentage'], 2) : '0';
-        } elseif ($spare && is_numeric($spare->vat)) {
-            $this->vat_percentage = (string) round((float) $spare->vat, 2);
-        } else {
-            $this->vat_percentage = '0';
-        }
+        // Always use global VAT percentage from WebsiteSetting (ignore per-item or SparePart VAT)
+        $defaultVat = WebsiteSetting::current()->vat_percentage ?? 0;
+        $this->vat_percentage = is_numeric($defaultVat) ? (string) round((float) $defaultVat, 2) : '0';
 
         if (array_key_exists('discount', $data) && $data['discount'] !== null && $data['discount'] !== '') {
             $this->discount = is_numeric($data['discount']) ? (string) round((float) $data['discount'], 2) : '0';

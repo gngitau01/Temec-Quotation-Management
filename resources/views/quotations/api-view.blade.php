@@ -222,11 +222,6 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">VAT Percentage (%)</label>
-                        <input type="number" id="vatPercentageInput" step="0.01" class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-600">
-                    </div>
-
-                    <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
                         <input type="number" id="discountInput" step="0.01" class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-600">
                     </div>
@@ -738,7 +733,6 @@ function selectQuotation(id) {
         const itemId = this.value;
         if (!itemId) {
             document.getElementById('unitPriceInput').value = '';
-            document.getElementById('vatPercentageInput').value = '';
             document.getElementById('discountInput').value = '';
             return;
         }
@@ -748,7 +742,6 @@ function selectQuotation(id) {
                 if (data.status === 'success') {
                     const d = data.data;
                     document.getElementById('unitPriceInput').value = d.unit_price != null ? d.unit_price : '';
-                    document.getElementById('vatPercentageInput').value = d.vat_percentage != null ? d.vat_percentage : '';
                     document.getElementById('discountInput').value = d.discount != null ? d.discount : '';
                 }
             })
@@ -763,11 +756,9 @@ function selectQuotation(id) {
         const selectedPart = sparePartsData.find(part => part.id == selectedId);
         if (selectedPart) {
             document.getElementById('unitPriceInput').value = selectedPart.amount_per_unit != null ? selectedPart.amount_per_unit : '';
-            document.getElementById('vatPercentageInput').value = selectedPart.vat != null ? selectedPart.vat : '';
             document.getElementById('discountInput').value = selectedPart.discount != null ? selectedPart.discount : '';
         } else {
             document.getElementById('unitPriceInput').value = '';
-            document.getElementById('vatPercentageInput').value = '';
             document.getElementById('discountInput').value = '';
         }
     });
@@ -778,7 +769,6 @@ function selectQuotation(id) {
         document.getElementById('itemSelect').value = '';
         document.getElementById('sparePartSelect').value = '';
         document.getElementById('unitPriceInput').value = '';
-        document.getElementById('vatPercentageInput').value = '';
         document.getElementById('discountInput').value = '';
     }
 
@@ -786,14 +776,12 @@ function selectQuotation(id) {
     function updateItemPrice() {
         const itemId = document.getElementById('itemSelect').value;
         const unitPrice = document.getElementById('unitPriceInput').value;
-        const vatPercentage = document.getElementById('vatPercentageInput').value;
         const discount = document.getElementById('discountInput').value;
 
         if (!itemId || !unitPrice) {
             alert('Please select an item and ensure a price is set');
             return;
         }
-console.log(discount,vatPercentage,unitPrice);
 
         fetch(`/api/item/${itemId}/pricing`, {
             method: 'POST',
@@ -802,7 +790,6 @@ console.log(discount,vatPercentage,unitPrice);
             },
             body: JSON.stringify({
                 unit_price: parseFloat(unitPrice),
-                vat_percentage: vatPercentage !== '' ? parseFloat(vatPercentage) : undefined,
                 discount: discount !== '' ? parseFloat(discount) : undefined
             })
         })
