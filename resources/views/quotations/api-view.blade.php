@@ -157,7 +157,7 @@
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Quantity</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unit</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Unit Price</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount (%)</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Discount</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">VAT</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Total Cost</th>
                             </tr>
@@ -219,11 +219,6 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Unit Price</label>
                         <input type="number" id="unitPriceInput" step="0.01" class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-600">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">VAT Percentage (%)</label>
-                        <input type="number" id="vatPercentageInput" step="0.01" class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-600">
                     </div>
 
                     <div class="mb-4">
@@ -510,9 +505,6 @@
         });
     });
 function selectQuotation(id) {
-    // Do whatever logic you need
-    console.log("Selected quotation id:", id);
-
     // Navigate to details page
     window.location.href = `/quotations/${id}/details`;
 }
@@ -605,18 +597,27 @@ function selectQuotation(id) {
         // Populate items table
         const tableBody = document.getElementById('itemsTableBody');
         if (items.length > 0) {
-            tableBody.innerHTML = items.map(item => `
+            tableBody.innerHTML = items.map(item => {
+                const unitPrice = item.unit_price != null ? parseFloat(item.unit_price) : 0;
+                const discountPercent = item.discount != null ? parseFloat(item.discount) : 0;
+                const discountPerUnitFromDb = item.discount_value != null ? parseFloat(item.discount_value) : null;
+                const discountPerUnit = discountPerUnitFromDb !== null
+                    ? discountPerUnitFromDb
+                    : (unitPrice > 0 && discountPercent > 0 ? (unitPrice * discountPercent) / 100 : 0);
+
+                return `
                     <tr class="border-t hover:bg-gray-50">
                         <td class="px-6 py-4 text-sm text-gray-900">${item.item_no || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.description || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatNumber(item.quantity)}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.unit || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.unit_price)}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.discount)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(discountPerUnit)}</td>
                         <td class="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(item.vat)}</td>
                         <td class="px-6 py-4 text-sm font-semibold text-gray-900 text-right">${formatCurrency(item.total_cost)}</td>
                     </tr>
-                `).join('');
+                `;
+            }).join('');
             const grandTotal = items.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
             document.getElementById('itemsGrandTotal').textContent = formatCurrency(grandTotal);
         } else {
@@ -732,7 +733,6 @@ function selectQuotation(id) {
         const itemId = this.value;
         if (!itemId) {
             document.getElementById('unitPriceInput').value = '';
-            document.getElementById('vatPercentageInput').value = '';
             document.getElementById('discountInput').value = '';
             return;
         }
@@ -742,7 +742,6 @@ function selectQuotation(id) {
                 if (data.status === 'success') {
                     const d = data.data;
                     document.getElementById('unitPriceInput').value = d.unit_price != null ? d.unit_price : '';
-                    document.getElementById('vatPercentageInput').value = d.vat_percentage != null ? d.vat_percentage : '';
                     document.getElementById('discountInput').value = d.discount != null ? d.discount : '';
                 }
             })
@@ -757,11 +756,9 @@ function selectQuotation(id) {
         const selectedPart = sparePartsData.find(part => part.id == selectedId);
         if (selectedPart) {
             document.getElementById('unitPriceInput').value = selectedPart.amount_per_unit != null ? selectedPart.amount_per_unit : '';
-            document.getElementById('vatPercentageInput').value = selectedPart.vat != null ? selectedPart.vat : '';
             document.getElementById('discountInput').value = selectedPart.discount != null ? selectedPart.discount : '';
         } else {
             document.getElementById('unitPriceInput').value = '';
-            document.getElementById('vatPercentageInput').value = '';
             document.getElementById('discountInput').value = '';
         }
     });
@@ -772,7 +769,6 @@ function selectQuotation(id) {
         document.getElementById('itemSelect').value = '';
         document.getElementById('sparePartSelect').value = '';
         document.getElementById('unitPriceInput').value = '';
-        document.getElementById('vatPercentageInput').value = '';
         document.getElementById('discountInput').value = '';
     }
 
@@ -780,14 +776,12 @@ function selectQuotation(id) {
     function updateItemPrice() {
         const itemId = document.getElementById('itemSelect').value;
         const unitPrice = document.getElementById('unitPriceInput').value;
-        const vatPercentage = document.getElementById('vatPercentageInput').value;
         const discount = document.getElementById('discountInput').value;
 
         if (!itemId || !unitPrice) {
             alert('Please select an item and ensure a price is set');
             return;
         }
-console.log(discount,vatPercentage,unitPrice);
 
         fetch(`/api/item/${itemId}/pricing`, {
             method: 'POST',
@@ -796,7 +790,6 @@ console.log(discount,vatPercentage,unitPrice);
             },
             body: JSON.stringify({
                 unit_price: parseFloat(unitPrice),
-                vat_percentage: vatPercentage !== '' ? parseFloat(vatPercentage) : undefined,
                 discount: discount !== '' ? parseFloat(discount) : undefined
             })
         })

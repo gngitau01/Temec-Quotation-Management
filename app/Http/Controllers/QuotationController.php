@@ -8,6 +8,7 @@ use App\Models\quotation_info;
 use App\Models\items;
 use App\Models\vendors;
 use App\Models\buyers;
+use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -120,22 +121,36 @@ class QuotationController extends Controller
                 // Create items
                 try {
                     Log::info('Items data check', ['items_exist' => isset($data['items']), 'is_array' => is_array($data['items'] ?? null), 'data_keys' => array_keys($data)]);
+
+                    // Default VAT from settings used when API does not provide a VAT percentage
+                    $defaultVat = WebsiteSetting::current()->vat_percentage ?? 0;
                     
                     if (isset($data['items']) && is_array($data['items'])) {
                         Log::info('Creating items', ['count' => count($data['items'])]);
                         
                         foreach ($data['items'] as $item) {
                             if (is_array($item)) {
+                                $unitPrice = !empty($item['unitPrice']) ? (float) $item['unitPrice'] : 0;
+                                $discountPercent = !empty($item['discount']) ? (float) $item['discount'] : 0;
+                                $discountValue = ($unitPrice > 0 && $discountPercent > 0)
+                                    ? ($unitPrice * $discountPercent) / 100
+                                    : 0;
+
+                                $vatPercentage = isset($item['vatPercentage']) || isset($item['vat_percentage'])
+                                    ? (float) ($item['vatPercentage'] ?? $item['vat_percentage'])
+                                    : (float) $defaultVat;
+
                                 items::create([
                                     'quotation_id' => $quotation->id,
                                     'item_no' => $item['itemNo'] ?? $item['item_no'] ?? null,
                                     'description' => $item['description'] ?? null,
                                     'quantity' => !empty($item['quantity']) ? (float) $item['quantity'] : 0,
                                     'unit' => $item['unit'] ?? null,
-                                    'unit_price' => !empty($item['unitPrice']) ? (float) $item['unitPrice'] : 0,
-                                    'discount' => !empty($item['discount']) ? (float) $item['discount'] : null,
+                                    'unit_price' => $unitPrice ?: 0,
+                                    'discount' => $discountPercent ?: null,
+                                    'discount_value' => $discountValue ?: null,
                                     'vat' => !empty($item['vat']) ? (float) $item['vat'] : null,
-                                    'vat_percentage' => (float) ($item['vatPercentage'] ?? $item['vat_percentage'] ?? 0),
+                                    'vat_percentage' => $vatPercentage,
                                     'total_cost' => !empty($item['totalCost']) ? (float) $item['totalCost'] : null,
                                 ]);
                             }
@@ -234,23 +249,23 @@ class QuotationController extends Controller
         $vendor = vendors::where('quotation_id', $id)->first();
         $buyer = buyers::where('quotation_id', $id)->first();
         $items = items::where('quotation_id', $id)->get();
-        // Ensure VAT and Discount are set from SparePart if missing, and recalculate total_cost
+        // Ensure VAT is set from Website settings globally, and discount can still fall back to SparePart
+        $defaultVat = WebsiteSetting::current()->vat_percentage ?? 0;
         foreach ($items as $item) {
             $spare = null;
             if ($item->item_no) {
                 $spare = \App\Models\SparePart::where('part_number', $item->item_no)->first();
             }
-            if ($spare) {
-                if ($item->vat_percentage == 0 || $item->vat_percentage === null) {
-                    $item->vat_percentage = $spare->vat;
-                }
-                if ($item->discount === null) {
-                    $item->discount = $spare->discount;
-                }
-                $item->vat = $item->calculateVAT();
-                $item->total_cost = $item->calculateTotalCost();
-                $item->save();
+
+            $item->vat_percentage = $defaultVat;
+
+            if ($spare && $item->discount === null) {
+                $item->discount = $spare->discount;
             }
+
+            $item->vat = $item->calculateVAT();
+            $item->total_cost = $item->calculateTotalCost();
+            $item->save();
         }
         return view('quotations.details', compact('quotation', 'vendor', 'buyer', 'items'));
     }

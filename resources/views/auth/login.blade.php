@@ -39,7 +39,6 @@
             </div>
             <div class="flex items-center justify-between">
                 <button class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
-                <a href="{{ route('register') }}" class="text-sm text-blue-600">Create account</a>
             </div>
         </form>
     </div>

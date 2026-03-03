@@ -72,7 +72,7 @@ class SparePartsController extends Controller
 
     public function apiList()
     {
-        $spareParts = SparePart::select('id', 'part_number', 'name', 'description', 'amount_per_unit', 'vat', 'discount')->get();
+        $spareParts = SparePart::select('id', 'part_number', 'name', 'description', 'amount_per_unit', 'discount')->get();
         return response()->json([
             'status' => 'success',
             'data' => $spareParts

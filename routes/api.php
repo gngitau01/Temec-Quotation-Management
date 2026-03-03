@@ -1,9 +1,13 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SparePartsController;
+use App\Http\Controllers\WebsiteSettingsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -42,3 +46,7 @@ Route::post('/quotation/{id}/generate', [FileUploadController::class, 'sendQuota
 
 // Spare Parts API
 Route::get('/spare-parts', [SparePartsController::class, 'apiList']);
+
+// Website Settings API
+Route::get('/settings', [WebsiteSettingsController::class, 'show']);
+Route::put('/settings', [WebsiteSettingsController::class, 'update']);
